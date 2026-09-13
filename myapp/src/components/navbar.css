@@ -1,0 +1,18 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+nav{
+    position:sticky;
+    top:0;
+    left:0;
+    background-color: antiquewhite;
+    width:100%;
+    display:flex;
+    justify-content: space-between;
+}
+.links{
+    display: flex;
+    gap: 30px;
+
+}
