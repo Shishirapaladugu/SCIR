@@ -6,7 +6,10 @@ export default function Navbar() {
 
             <h2>my app</h2>
             <div className='links'>
-                <Link to='/'>Login</Link>
+                <Link to='/'>Home</Link>
+                {/* <Link to='/profile'>Profile</Link>
+                <Link to='/upload'>Upload</Link> */}
+                <Link to='/login'>Login</Link>
                 <Link to='/register'>Register</Link>
             </div>
 

@@ -1,7 +1,9 @@
 import './login.css'
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
+    const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,7 +49,7 @@ export default function Register() {
     return (
         <div className="login-overlay">
             <div className='login-box'>
-                <button className="close-btn">x</button>
+                <button className="close-btn" onClick={() => navigate('/')}>x</button>
                 <h2>Register</h2>
                 <form onSubmit={handleRegister}>
                     <div className="form-row">
