@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
+const Resource = require('./models/Resource');
 const jwt = require('jsonwebtoken');
 
 require('dotenv').config();
@@ -193,6 +194,101 @@ app.post('/api/login', async (req, res) => {
   }
 });
 */
+
+// ______________________UPLOAD RESOURCE________________________________
+
+app.post('/api/resources', async(req, res)=> {
+    try {
+        const {
+            resourceType,
+            title,
+            author,
+            subject,
+            category,
+            description,
+            academicYear,
+            semester,
+            institution,
+            condition,
+            yearsUsed,
+            originalPrice,
+            listingType,
+            expectedPrice,
+            phone,
+            gmail,
+            fileName
+        } = req.body;
+
+        if (
+            !resourceType ||
+            !title ||
+            !subject ||
+            !category ||
+            !description ||
+            !institution ||
+            !phone ||
+            !gmail
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide all required fields'
+            });
+        }
+
+          const numericFields = ['yearsUsed', 'originalPrice', 'expectedPrice'];
+          const normalizedNumbers = Object.fromEntries(
+            numericFields.map((field) => [
+              field,
+              req.body[field] === '' || req.body[field] === undefined
+                ? undefined
+                : Number(req.body[field])
+            ])
+          );
+
+          if (numericFields.some((field) => Number.isNaN(normalizedNumbers[field]))) {
+            return res.status(400).json({
+              success: false,
+              message: 'Numeric fields must contain valid numbers'
+            });
+          }
+
+        const resource = new Resource({
+            resourceType,
+            title,
+            author,
+            subject,
+            category,
+            description,
+            academicYear,
+            semester,
+            institution,
+            condition,
+            yearsUsed: normalizedNumbers.yearsUsed,
+            originalPrice: normalizedNumbers.originalPrice,
+            listingType,
+            expectedPrice: normalizedNumbers.expectedPrice,
+            phone,
+            gmail,
+            fileName
+        });
+        console.log('Resource to be saved:', resource);
+        await resource.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Resource successfully added',
+            resource
+        });
+
+    } catch (error) {
+        console.error('Resource creation error:', error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Server error while adding resource'
+        });
+    }
+});
 // Start Server
 app.listen(PORT, () => {
   console.log(` Server is running on http://localhost:${PORT}`);

@@ -5,6 +5,7 @@ import Navbar from './components/navbar'
 import Login from './pages/login'
 import Register from './pages/register';
 import Home from './pages/home'
+import Upload from './pages/upload'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/upload' element={<Upload />} />
         </Routes>
       </BrowserRouter>
 

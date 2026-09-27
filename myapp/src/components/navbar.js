@@ -1,18 +1,30 @@
-import { Link } from 'react-router-dom';
-import './navbar.css';
+import { Link } from "react-router-dom";
+import "./navbar.css";
 export default function Navbar() {
-    return (
-        <nav>
-
-            <h2>my app</h2>
-            <div className='links'>
-                <Link to='/'>Home</Link>
-                {/* <Link to='/profile'>Profile</Link>
-                <Link to='/upload'>Upload</Link> */}
-                <Link to='/login'>Login</Link>
-                <Link to='/register'>Register</Link>
-            </div>
-
-        </nav>
-    );
+  return (
+    <nav>
+        <div>
+            <div>
+      <h2 className="logo">EduLoop</h2><br/>
+</div>
+<div>
+      <p className="tagline">Keep the resources Circulation</p>
+      </div>
+      </div>
+      <div className="links">
+        <Link to="/" className="link">
+          Home
+        </Link>
+        <Link to="/login" className="link">
+          Login
+        </Link>
+        <Link to="/register" className="link">
+          Register
+        </Link>
+        <Link to="/upload" className="link">
+          Upload
+        </Link>
+      </div>
+    </nav>
+  );
 }

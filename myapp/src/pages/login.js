@@ -45,7 +45,7 @@ export default function Login() {
         <div className="login-overlay"> 
             <div className='login-box'> 
                 <div className='login-header'> 
-                <button className="close-btn" onClick={() => navigate('/')}>x</button> 
+                <button className="c-btn" onClick={() => navigate('/')}>x</button> 
                 <h2>Login</h2> 
                 </div> 
                 <form onSubmit={handleLogin}> 

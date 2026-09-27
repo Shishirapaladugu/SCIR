@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Upload() {
 
     const navigate = useNavigate();
+  
 
     const [formData, setFormData] = useState({
         resourceType: '',
@@ -21,6 +22,8 @@ export default function Upload() {
         originalPrice: '',
         listingType: 'free',
         expectedPrice: '',
+        phone:'',
+        gmail:'',
         file: null
     });
 
@@ -40,6 +43,66 @@ export default function Upload() {
 
     const isQuestionPaper =
         questionPaperTypes.includes(formData.resourceType);
+    
+    const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    console.log("Form data:", formData);
+
+    try {
+        const response = await fetch('http://localhost:5000/api/resources', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...formData,
+                yearsUsed: formData.yearsUsed ? Number(formData.yearsUsed) : 0,
+                originalPrice: formData.originalPrice ? Number(formData.originalPrice) : 0,
+                expectedPrice: formData.expectedPrice ? Number(formData.expectedPrice) : 0
+            })
+        });
+
+        console.log("Response status:", response.status);
+
+        const data = await response.json();
+
+        console.log("Backend response:", data);
+
+        if (data.success) {
+            alert("Resource submitted successfully!");
+
+            // Optional: clear form
+            setFormData({
+                resourceType: '',
+                title: '',
+                author: '',
+                subject: '',
+                category: '',
+                description: '',
+                academicYear: '',
+                semester: '',
+                institution: '',
+                condition: '',
+                yearsUsed: 0,
+                originalPrice: 0,
+                listingType: 'free',
+                expectedPrice: 0,
+                phone: '',
+                gmail: '',
+                file: null
+            });
+
+        } else {
+            alert(data.message);
+        }
+
+    } catch (error) {
+        console.error("Submit error:", error);
+        alert("Unable to submit resource. Check the console.");
+    }
+};
+
 
 
     const handleChange = (e) => {
@@ -64,18 +127,7 @@ export default function Upload() {
     };
 
 
-    const handleSubmit = (e) => {
-
-        e.preventDefault();
-
-        console.log(formData);
-
-        // Backend API will be connected here
-
-        alert('Resource submitted successfully!');
-
-    };
-
+    
 
     return (
 
@@ -328,6 +380,27 @@ export default function Upload() {
                     </div>
 
 
+                    {/* INSTITUTION */}
+
+                    <div className="form-row">
+
+                        <label htmlFor="institution">
+                            Institution:
+                        </label>
+
+                        <input
+                            type="text"
+                            id="institution"
+                            name="institution"
+                            placeholder="Enter college/university"
+                            value={formData.institution}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+
+
                     {/* QUESTION PAPER DETAILS */}
 
                     {isQuestionPaper && (
@@ -410,23 +483,6 @@ export default function Upload() {
 
                             </div>
 
-
-                            <div className="form-row">
-
-                                <label htmlFor="institution">
-                                    Institution:
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="institution"
-                                    name="institution"
-                                    placeholder="Enter college/university"
-                                    value={formData.institution}
-                                    onChange={handleChange}
-                                />
-
-                            </div>
 
                         </>
 
@@ -600,6 +656,41 @@ export default function Upload() {
                         </>
 
                     )}
+                    <div className="form-row">
+
+                        <label htmlFor="phone">
+                            PHONE:
+                        </label>
+
+                        <input
+                            type="number"
+                            id="phone"
+                            name="phone"
+                            min-length="10"
+                            placeholder="Enter phone number"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
+                    <div className="form-row">
+
+                        <label htmlFor="gmail">
+                            EMAIL:
+                        </label>
+
+                        <input
+                            type="email"
+                            id="gmail"
+                            name="gmail"
+                            placeholder="Enter email address"
+                            value={formData.gmail}
+                            onChange={handleChange}
+                            required
+                        />
+
+                    </div>
 
 
                     {/* FILE */}
