@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const Resource = require('./models/Resource');
 const jwt = require('jsonwebtoken');
+const authMiddleware = require('./middleware/authMiddleware');
 
 require('dotenv').config();
 
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
 
 // Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/auth_db';
@@ -197,7 +199,7 @@ app.post('/api/login', async (req, res) => {
 
 // ______________________UPLOAD RESOURCE________________________________
 
-app.post('/api/resources', async(req, res)=> {
+app.post('/api/resources',authMiddleware, async(req, res)=> {
     try {
         const {
             resourceType,
@@ -269,7 +271,8 @@ app.post('/api/resources', async(req, res)=> {
             expectedPrice: normalizedNumbers.expectedPrice,
             phone,
             gmail,
-            fileName
+            fileName,
+            owner: req.user.id // Assuming the owner ID is sent in the request body
         });
         console.log('Resource to be saved:', resource);
         await resource.save();
