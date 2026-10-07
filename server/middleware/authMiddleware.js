@@ -2,7 +2,7 @@ const jwt=require('jsonwebtoken');
 
 const authMiddleware=(req,res,next)=>{
     authHeader=req.headers.authorization;
-    if(!authHeader||!authHeader.startswith('Bearer')){
+    if(!authHeader||!authHeader.startsWith('Bearer')){
         res.status(401).json({
             success:false,
             message:'Authorization header missing or malformed'
@@ -21,3 +21,4 @@ const authMiddleware=(req,res,next)=>{
     }
 
 }
+module.exports = authMiddleware;

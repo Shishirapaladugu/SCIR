@@ -292,6 +292,50 @@ app.post('/api/resources',authMiddleware, async(req, res)=> {
         });
     }
 });
+app.get('/api/my-resources', authMiddleware, async (req, res) => {
+    try {
+        const resources = await Resource.find({
+            owner: req.user.id
+        }).sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            resources
+        });
+
+    } catch (error) {
+        console.error('Error fetching my resources:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching resources'
+        });
+    }
+});
+
+//profile page after user loged in
+app.get('/api/me', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select('-password');
+    if (!user){
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    console.error('Profile retrieval error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while retrieving profile'
+    });
+  }
+});
 // Start Server
 app.listen(PORT, () => {
   console.log(` Server is running on http://localhost:${PORT}`);

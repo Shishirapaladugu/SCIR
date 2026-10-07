@@ -1,0 +1,157 @@
+.dashboard-container {
+    box-sizing: border-box;
+    min-height: calc(100vh - 72px);
+    padding: 48px max(24px, calc((100vw - 1120px) / 2));
+    background: #f5f7ff;
+    color: #20243a;
+}
+
+.dashboard-container h1 {
+    margin: 0 0 28px;
+    color: #20243a;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    letter-spacing: -0.04em;
+}
+
+.profile-card,
+.dashboard-card,
+.dashboard-section {
+    border: 1px solid #e7e9f4;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(32, 36, 58, 0.05);
+}
+
+.profile-card {
+    padding: 24px 28px;
+}
+
+.profile-card h2,
+.dashboard-section h2 {
+    margin: 0 0 18px;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+}
+
+.profile-card p {
+    margin: 10px 0 0;
+    color: #62677d;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.profile-card strong {
+    display: inline-block;
+    min-width: 68px;
+    color: #30354c;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin: 22px 0;
+}
+
+.dashboard-card {
+    padding: 24px 28px;
+    border-top: 3px solid #4f46e5;
+}
+
+.dashboard-card h3 {
+    margin: 0;
+    color: #4f46e5;
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+.dashboard-card p {
+    margin: 8px 0 0;
+    color: #62677d;
+}
+
+.dashboard-section {
+    padding: 26px 28px;
+}
+
+.dashboard-section > p {
+    margin: 0;
+    padding: 24px;
+    border: 1px dashed #d7daea;
+    border-radius: 12px;
+    color: #62677d;
+    text-align: center;
+}
+
+.resources-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: 16px;
+}
+
+.resource-card {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid #e7e9f4;
+    border-radius: 12px;
+    background: #fbfbff;
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.resource-card:hover {
+    transform: translateY(-2px);
+    border-color: #c7c3ff;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.08);
+}
+
+.resource-card h3 {
+    margin: 0 0 14px;
+    color: #30354c;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+}
+
+.resource-card p {
+    margin: 8px 0 0;
+    color: #62677d;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.resource-card strong {
+    color: #30354c;
+}
+
+@media (max-width: 600px) {
+    .dashboard-container {
+        padding: 32px 16px;
+    }
+
+    .dashboard-container h1 {
+        margin-bottom: 22px;
+    }
+
+    .profile-card,
+    .dashboard-section {
+        padding: 20px;
+    }
+
+    .dashboard-stats {
+        gap: 12px;
+    }
+
+    .dashboard-card {
+        padding: 20px;
+    }
+
+    .dashboard-card h3 {
+        font-size: 1.7rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .resource-card {
+        transition: none;
+    }
+}

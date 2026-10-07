@@ -33,7 +33,7 @@ export default function Login() {
                 //navigate to home page or dashboard 
                 setMessage('Login successful!'); 
                 alert('Login successful! Redirecting to home page...'); 
-                navigate('/'); 
+                navigate('/dashboard'); 
             } 
         } catch (error) { 
             console.error('Error logging in user:', error); 
