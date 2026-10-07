@@ -5,6 +5,7 @@ import "./dashboard.css";
 export default function Dashboard() {
     const [user, setUser] = useState(null);
     const [resources, setResources] = useState([]);
+    const [interests, setInterests] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -54,6 +55,15 @@ export default function Dashboard() {
                     setResources(resourceData.resources);
                 }
 
+                const interestsResponse = await fetch(
+                    "http://localhost:5000/api/resource-interests",
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const interestsData = await interestsResponse.json();
+                if (!interestsResponse.ok || !interestsData.success) {
+                    throw new Error(interestsData.message || "Unable to load incoming requests.");
+                }
+                setInterests(interestsData.interests);
             } catch (error) {
                 console.error("Dashboard error:", error);
             } finally {
@@ -151,6 +161,29 @@ export default function Dashboard() {
                     </div>
                 )}
 
+            </div>
+
+            <div className="dashboard-section">
+                <h2>Interest in my resources</h2>
+                {interests.length === 0 ? (
+                    <p>No one has requested your resources yet.</p>
+                ) : (
+                    <div className="resources-list">
+                        {interests.map((interest) => (
+                            <div className="resource-card" key={interest._id}>
+                                <h3>{interest.resource?.title || "Resource no longer available"}</h3>
+                                <p><strong>Requested by:</strong> {interest.requester?.name || "Unknown user"}</p>
+                                {interest.requester?.email && (
+                                    <p><strong>Email:</strong> {interest.requester.email}</p>
+                                )}
+                                <p>
+                                    <strong>Sent:</strong>{" "}
+                                    {new Date(interest.createdAt).toLocaleDateString()}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
         </div>

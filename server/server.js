@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const Resource = require('./models/Resource');
+const ResourceInterest = require('./models/ResourceInterest');
 const jwt = require('jsonwebtoken');
 const authMiddleware = require('./middleware/authMiddleware');
 
@@ -292,6 +293,105 @@ app.post('/api/resources',authMiddleware, async(req, res)=> {
         });
     }
 });
+
+// Public resource listings intentionally omit direct owner contact details.
+app.get('/api/resources', async (req, res) => {
+    try {
+        const resources = await Resource.find()
+            .select('-phone -gmail -filePath')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        res.json({
+            success: true,
+            resources: resources.map(({ owner, ...resource }) => ({
+                ...resource,
+                ownerId: String(owner)
+            }))
+        });
+    } catch (error) {
+        console.error('Error fetching public resources:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching resources'
+        });
+    }
+});
+
+app.post('/api/resources/:resourceId/interests', authMiddleware, async (req, res) => {
+    try {
+        const resource = await Resource.findById(req.params.resourceId).select('owner title');
+        if (!resource) {
+            return res.status(404).json({ success: false, message: 'Resource not found' });
+        }
+        if (String(resource.owner) === String(req.user.id)) {
+            return res.status(400).json({ success: false, message: 'You cannot request your own resource' });
+        }
+
+        const interest = new ResourceInterest({
+            resource: resource._id,
+            owner: resource.owner,
+            requester: req.user.id
+        });
+        await interest.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Your interest has been sent to the resource owner'
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: 'You have already requested this resource'
+            });
+        }
+        if (error.name === 'CastError') {
+            return res.status(400).json({ success: false, message: 'Invalid resource ID' });
+        }
+        console.error('Resource interest creation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while sending your request'
+        });
+    }
+});
+
+app.get('/api/my-resource-interests', authMiddleware, async (req, res) => {
+    try {
+        const interests = await ResourceInterest.find({ requester: req.user.id })
+            .select('resource')
+            .lean();
+        res.json({
+            success: true,
+            resourceIds: interests.map((interest) => String(interest.resource))
+        });
+    } catch (error) {
+        console.error('Error fetching sent resource interests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching your requests'
+        });
+    }
+});
+
+app.get('/api/resource-interests', authMiddleware, async (req, res) => {
+    try {
+        const interests = await ResourceInterest.find({ owner: req.user.id })
+            .populate('resource', 'title resourceType subject listingType expectedPrice')
+            .populate('requester', 'name email')
+            .sort({ createdAt: -1 })
+            .lean();
+        res.json({ success: true, interests });
+    } catch (error) {
+        console.error('Error fetching incoming resource interests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching incoming requests'
+        });
+    }
+});
+
 app.get('/api/my-resources', authMiddleware, async (req, res) => {
     try {
         const resources = await Resource.find({

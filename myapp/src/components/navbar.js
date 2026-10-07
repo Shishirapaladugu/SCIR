@@ -42,6 +42,9 @@ export default function Navbar() {
                         <Link to="/upload" className="link">
                             Upload
                         </Link>
+                        <Link to="/resources" className="link">
+                            Resources
+                        </Link>
 
                         <Link to="/dashboard" className="link">
                             Profile
