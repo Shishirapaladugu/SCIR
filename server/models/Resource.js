@@ -73,7 +73,14 @@ const resourceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-     owner: {
+
+    status: {
+      type: String,
+      enum: ["available", "reserved", "claimed"],
+      default: "available",
+    },
+
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -88,7 +95,6 @@ const resourceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    
 
     fileName: {
       type: String,

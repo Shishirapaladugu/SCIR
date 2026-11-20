@@ -1,11 +1,17 @@
 import './upload.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Upload() {
-
     const navigate = useNavigate();
-  
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login first to share an educational resource.');
+            navigate('/login');
+        }
+    }, [navigate]);
 
     const [formData, setFormData] = useState({
         resourceType: '',
@@ -22,10 +28,13 @@ export default function Upload() {
         originalPrice: '',
         listingType: 'free',
         expectedPrice: '',
-        phone:'',
-        gmail:'',
+        phone: '',
+        gmail: '',
+        fileName: '',
         file: null
     });
+
+    const [submitting, setSubmitting] = useState(false);
 
     const physicalResourceTypes = [
         'Book',
@@ -38,128 +47,89 @@ export default function Upload() {
         'Previous Year Papers'
     ];
 
-    const isPhysicalResource =
-        physicalResourceTypes.includes(formData.resourceType);
+    const isPhysicalResource = physicalResourceTypes.includes(formData.resourceType);
+    const isQuestionPaper = questionPaperTypes.includes(formData.resourceType);
 
-    const isQuestionPaper =
-        questionPaperTypes.includes(formData.resourceType);
-    
     const handleSubmit = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    console.log("Form data:", formData);
-    const token = localStorage.getItem('token');
-    try {
-        const response = await fetch('http://localhost:5000/api/resources', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                ...formData,
-                yearsUsed: formData.yearsUsed ? Number(formData.yearsUsed) : 0,
-                originalPrice: formData.originalPrice ? Number(formData.originalPrice) : 0,
-                expectedPrice: formData.expectedPrice ? Number(formData.expectedPrice) : 0
-            })
-        });
-
-        console.log("Response status:", response.status);
-
-        const data = await response.json();
-
-        console.log("Backend response:", data);
-
-        if (data.success) {
-            alert("Resource submitted successfully!");
-
-            // Optional: clear form
-            setFormData({
-                resourceType: '',
-                title: '',
-                author: '',
-                subject: '',
-                category: '',
-                description: '',
-                academicYear: '',
-                semester: '',
-                institution: '',
-                condition: '',
-                yearsUsed: 0,
-                originalPrice: 0,
-                listingType: 'free',
-                expectedPrice: 0,
-                phone: '',
-                gmail: '',
-                file: null
-            });
-
-        } else {
-            alert(data.message);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('You must be logged in to share a resource.');
+            navigate('/login');
+            return;
         }
 
-    } catch (error) {
-        console.error("Submit error:", error);
-        alert("Unable to submit resource. Check the console.");
-    }
-};
+        setSubmitting(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/resources', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    fileName: formData.file ? formData.file.name : formData.fileName,
+                    yearsUsed: formData.yearsUsed ? Number(formData.yearsUsed) : 0,
+                    originalPrice: formData.originalPrice ? Number(formData.originalPrice) : 0,
+                    expectedPrice: formData.expectedPrice ? Number(formData.expectedPrice) : 0
+                })
+            });
 
+            const data = await response.json();
 
+            if (data.success) {
+                alert('Resource shared successfully!');
+                navigate('/dashboard');
+            } else {
+                alert(data.message || 'Unable to share resource.');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            alert('Unable to submit resource. Please check the server connection.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const handleChange = (e) => {
-
         const { name, value } = e.target;
-
         setFormData((prev) => ({
             ...prev,
             [name]: value
         }));
-
     };
-
 
     const handleFileChange = (e) => {
-
+        const file = e.target.files[0];
         setFormData((prev) => ({
             ...prev,
-            file: e.target.files[0]
+            file,
+            fileName: file ? file.name : ''
         }));
-
     };
 
-
-    
-
     return (
-
         <div className="upload-overlay">
-
             <div className="upload-box">
-
                 <div className="upload-header">
-
                     <button
                         className="close-btn"
                         onClick={() => navigate('/')}
+                        type="button"
                     >
-                        x
+                        ×
                     </button>
-
                     <h2>Share Educational Resource</h2>
-
                 </div>
 
-
                 <form onSubmit={handleSubmit}>
-
                     {/* RESOURCE TYPE */}
-
                     <div className="form-row">
-
                         <label htmlFor="resourceType">
                             Resource Type:
                         </label>
-
                         <select
                             id="resourceType"
                             name="resourceType"
@@ -167,68 +137,24 @@ export default function Upload() {
                             onChange={handleChange}
                             required
                         >
-
-                            <option value="">
-                                Select resource type
-                            </option>
-
-                            <option value="Book">
-                                Book
-                            </option>
-
-                            <option value="Notes">
-                                Notes
-                            </option>
-
-                            <option value="Study Material">
-                                Study Material
-                            </option>
-
-                            <option value="Question Paper">
-                                Question Paper
-                            </option>
-
-                            <option value="Previous Year Papers">
-                                Previous Year Papers
-                            </option>
-
-                            <option value="Lab Manual">
-                                Lab Manual
-                            </option>
-
-                            <option value="Project Material">
-                                Project Material
-                            </option>
-
-                            <option value="Assignment">
-                                Assignment
-                            </option>
-
-                            <option value="Presentation">
-                                Presentation
-                            </option>
-
-                            <option value="Reference Material">
-                                Reference Material
-                            </option>
-
-                            <option value="Other">
-                                Other
-                            </option>
-
+                            <option value="">Select resource type</option>
+                            <option value="Book">Book</option>
+                            <option value="Notes">Notes</option>
+                            <option value="Study Material">Study Material</option>
+                            <option value="Question Paper">Question Paper</option>
+                            <option value="Previous Year Papers">Previous Year Papers</option>
+                            <option value="Lab Manual">Lab Manual</option>
+                            <option value="Project Material">Project Material</option>
+                            <option value="Assignment">Assignment</option>
+                            <option value="Presentation">Presentation</option>
+                            <option value="Reference Material">Reference Material</option>
+                            <option value="Other">Other</option>
                         </select>
-
                     </div>
 
-
                     {/* TITLE */}
-
                     <div className="form-row">
-
-                        <label htmlFor="title">
-                            Title:
-                        </label>
-
+                        <label htmlFor="title">Title:</label>
                         <input
                             type="text"
                             id="title"
@@ -238,20 +164,12 @@ export default function Upload() {
                             onChange={handleChange}
                             required
                         />
-
                     </div>
 
-
                     {/* AUTHOR - ONLY BOOK */}
-
                     {formData.resourceType === 'Book' && (
-
                         <div className="form-row">
-
-                            <label htmlFor="author">
-                                Author:
-                            </label>
-
+                            <label htmlFor="author">Author:</label>
                             <input
                                 type="text"
                                 id="author"
@@ -260,20 +178,12 @@ export default function Upload() {
                                 value={formData.author}
                                 onChange={handleChange}
                             />
-
                         </div>
-
                     )}
 
-
                     {/* SUBJECT */}
-
                     <div className="form-row">
-
-                        <label htmlFor="subject">
-                            Subject:
-                        </label>
-
+                        <label htmlFor="subject">Subject:</label>
                         <input
                             type="text"
                             id="subject"
@@ -283,18 +193,11 @@ export default function Upload() {
                             onChange={handleChange}
                             required
                         />
-
                     </div>
 
-
                     {/* CATEGORY */}
-
                     <div className="form-row">
-
-                        <label htmlFor="category">
-                            Category:
-                        </label>
-
+                        <label htmlFor="category">Category:</label>
                         <select
                             id="category"
                             name="category"
@@ -302,273 +205,125 @@ export default function Upload() {
                             onChange={handleChange}
                             required
                         >
-
-                            <option value="">
-                                Select Category
-                            </option>
-
-                            <option value="Computer Science">
-                                Computer Science
-                            </option>
-
-                            <option value="Engineering">
-                                Engineering
-                            </option>
-
-                            <option value="Mathematics">
-                                Mathematics
-                            </option>
-
-                            <option value="Physics">
-                                Physics
-                            </option>
-
-                            <option value="Chemistry">
-                                Chemistry
-                            </option>
-
-                            <option value="Biology">
-                                Biology
-                            </option>
-
-                            <option value="Management">
-                                Management
-                            </option>
-
-                            <option value="Commerce">
-                                Commerce
-                            </option>
-
-                            <option value="Competitive Exams">
-                                Competitive Exams
-                            </option>
-
-                            <option value="School Education">
-                                School Education
-                            </option>
-
-                            <option value="Research">
-                                Research
-                            </option>
-
-                            <option value="Other">
-                                Other
-                            </option>
-
+                            <option value="">Select Category</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Management">Management</option>
+                            <option value="Commerce">Commerce</option>
+                            <option value="Competitive Exams">Competitive Exams</option>
+                            <option value="School Education">School Education</option>
+                            <option value="Research">Research</option>
+                            <option value="Other">Other</option>
                         </select>
-
                     </div>
 
-
                     {/* DESCRIPTION */}
-
                     <div className="form-row">
-
-                        <label htmlFor="description">
-                            Description:
-                        </label>
-
+                        <label htmlFor="description">Description:</label>
                         <textarea
                             id="description"
                             name="description"
-                            placeholder="Describe the resource..."
+                            placeholder="Describe the condition, edition, topics covered..."
                             value={formData.description}
                             onChange={handleChange}
                             rows="4"
                             required
                         />
-
                     </div>
 
-
                     {/* INSTITUTION */}
-
                     <div className="form-row">
-
-                        <label htmlFor="institution">
-                            Institution:
-                        </label>
-
+                        <label htmlFor="institution">Institution / College:</label>
                         <input
                             type="text"
                             id="institution"
                             name="institution"
-                            placeholder="Enter college/university"
+                            placeholder="Enter college or university"
                             value={formData.institution}
                             onChange={handleChange}
                             required
                         />
-
                     </div>
 
-
                     {/* QUESTION PAPER DETAILS */}
-
                     {isQuestionPaper && (
-
                         <>
-
-                            <h3 className="section-title">
-                                Academic Details
-                            </h3>
-
-
+                            <h3 className="section-title">Academic Details</h3>
                             <div className="form-row">
-
-                                <label htmlFor="academicYear">
-                                    Academic Year:
-                                </label>
-
+                                <label htmlFor="academicYear">Academic Year:</label>
                                 <input
                                     type="text"
                                     id="academicYear"
                                     name="academicYear"
-                                    placeholder="2025-2026"
+                                    placeholder="e.g. 2024-2025"
                                     value={formData.academicYear}
                                     onChange={handleChange}
                                 />
-
                             </div>
 
-
                             <div className="form-row">
-
-                                <label htmlFor="semester">
-                                    Semester:
-                                </label>
-
+                                <label htmlFor="semester">Semester:</label>
                                 <select
                                     id="semester"
                                     name="semester"
                                     value={formData.semester}
                                     onChange={handleChange}
                                 >
-
-                                    <option value="">
-                                        Select Semester
-                                    </option>
-
-                                    <option value="1">
-                                        Semester 1
-                                    </option>
-
-                                    <option value="2">
-                                        Semester 2
-                                    </option>
-
-                                    <option value="3">
-                                        Semester 3
-                                    </option>
-
-                                    <option value="4">
-                                        Semester 4
-                                    </option>
-
-                                    <option value="5">
-                                        Semester 5
-                                    </option>
-
-                                    <option value="6">
-                                        Semester 6
-                                    </option>
-
-                                    <option value="7">
-                                        Semester 7
-                                    </option>
-
-                                    <option value="8">
-                                        Semester 8
-                                    </option>
-
+                                    <option value="">Select Semester</option>
+                                    <option value="1">Semester 1</option>
+                                    <option value="2">Semester 2</option>
+                                    <option value="3">Semester 3</option>
+                                    <option value="4">Semester 4</option>
+                                    <option value="5">Semester 5</option>
+                                    <option value="6">Semester 6</option>
+                                    <option value="7">Semester 7</option>
+                                    <option value="8">Semester 8</option>
                                 </select>
-
                             </div>
-
-
                         </>
-
                     )}
 
-
                     {/* PHYSICAL RESOURCE DETAILS */}
-
                     {isPhysicalResource && (
-
                         <>
-
-                            <h3 className="section-title">
-                                Physical Resource Details
-                            </h3>
-
-
+                            <h3 className="section-title">Physical Resource Details</h3>
                             <div className="form-row">
-
-                                <label htmlFor="condition">
-                                    Condition:
-                                </label>
-
+                                <label htmlFor="condition">Condition:</label>
                                 <select
                                     id="condition"
                                     name="condition"
                                     value={formData.condition}
                                     onChange={handleChange}
                                 >
-
-                                    <option value="">
-                                        Select Condition
-                                    </option>
-
-                                    <option value="New">
-                                        New
-                                    </option>
-
-                                    <option value="Like New">
-                                        Like New
-                                    </option>
-
-                                    <option value="Good">
-                                        Good
-                                    </option>
-
-                                    <option value="Fair">
-                                        Fair
-                                    </option>
-
-                                    <option value="Used">
-                                        Used
-                                    </option>
-
+                                    <option value="">Select Condition</option>
+                                    <option value="New">New</option>
+                                    <option value="Like New">Like New</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Used">Used</option>
                                 </select>
-
                             </div>
 
-
                             <div className="form-row">
-
-                                <label htmlFor="yearsUsed">
-                                    Years Used:
-                                </label>
-
+                                <label htmlFor="yearsUsed">Years Used:</label>
                                 <input
                                     type="number"
                                     id="yearsUsed"
                                     name="yearsUsed"
                                     min="0"
                                     step="0.5"
-                                    placeholder="e.g. 2"
+                                    placeholder="e.g. 1.5"
                                     value={formData.yearsUsed}
                                     onChange={handleChange}
                                 />
-
                             </div>
 
-
                             <div className="form-row">
-
-                                <label htmlFor="originalPrice">
-                                    Original Price:
-                                </label>
-
+                                <label htmlFor="originalPrice">Original Price:</label>
                                 <input
                                     type="number"
                                     id="originalPrice"
@@ -578,153 +333,100 @@ export default function Upload() {
                                     value={formData.originalPrice}
                                     onChange={handleChange}
                                 />
-
                             </div>
 
-
                             {/* FREE OR SELL */}
-
                             <div className="form-row">
-
-                                <label>
-                                    Listing Type:
-                                </label>
-
+                                <label>Listing Type:</label>
                                 <div className="listing-options">
-
                                     <label>
-
                                         <input
                                             type="radio"
                                             name="listingType"
                                             value="free"
-                                            checked={
-                                                formData.listingType === 'free'
-                                            }
+                                            checked={formData.listingType === 'free'}
                                             onChange={handleChange}
                                         />
-
-                                        Free
-
+                                        Free Giveaway
                                     </label>
-
-
                                     <label>
-
                                         <input
                                             type="radio"
                                             name="listingType"
                                             value="sale"
-                                            checked={
-                                                formData.listingType === 'sale'
-                                            }
+                                            checked={formData.listingType === 'sale'}
                                             onChange={handleChange}
                                         />
-
                                         Sell
-
                                     </label>
-
                                 </div>
-
                             </div>
 
-
                             {/* EXPECTED PRICE */}
-
                             {formData.listingType === 'sale' && (
-
                                 <div className="form-row">
-
-                                    <label htmlFor="expectedPrice">
-                                        Expected Price:
-                                    </label>
-
+                                    <label htmlFor="expectedPrice">Expected Price (₹):</label>
                                     <input
                                         type="number"
                                         id="expectedPrice"
                                         name="expectedPrice"
                                         min="0"
-                                        placeholder="₹500"
+                                        placeholder="₹350"
                                         value={formData.expectedPrice}
                                         onChange={handleChange}
+                                        required
                                     />
-
                                 </div>
-
                             )}
-
                         </>
-
                     )}
+
                     <div className="form-row">
-
-                        <label htmlFor="phone">
-                            PHONE:
-                        </label>
-
+                        <label htmlFor="phone">Phone Number:</label>
                         <input
-                            type="number"
+                            type="tel"
                             id="phone"
                             name="phone"
-                            min-length="10"
-                            placeholder="Enter phone number"
+                            placeholder="Enter 10-digit phone number"
                             value={formData.phone}
                             onChange={handleChange}
                             required
                         />
-
                     </div>
+
                     <div className="form-row">
-
-                        <label htmlFor="gmail">
-                            EMAIL:
-                        </label>
-
+                        <label htmlFor="gmail">Contact Email:</label>
                         <input
                             type="email"
                             id="gmail"
                             name="gmail"
-                            placeholder="Enter email address"
+                            placeholder="Enter contact email address"
                             value={formData.gmail}
                             onChange={handleChange}
                             required
                         />
-
                     </div>
 
-
-                    {/* FILE */}
-
+                    {/* FILE ATTACHMENT (OPTIONAL) */}
                     <div className="form-row">
-
-                        <label htmlFor="file">
-                            Upload File:
-                        </label>
-
+                        <label htmlFor="file">Attach Document or Photo (Optional):</label>
                         <input
                             type="file"
                             id="file"
                             onChange={handleFileChange}
                             accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
-                            required
                         />
-
                     </div>
-
 
                     <button
                         type="submit"
                         className="upload-btn"
+                        disabled={submitting}
                     >
-                        Share Resource
+                        {submitting ? 'Sharing...' : 'Share Resource'}
                     </button>
-
                 </form>
-
             </div>
-
         </div>
-
     );
 }

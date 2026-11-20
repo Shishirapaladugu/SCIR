@@ -1,4 +1,4 @@
-
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./navbar.css";
 
@@ -6,14 +6,29 @@ export default function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Read the current user whenever the component renders
-    const user = JSON.parse(localStorage.getItem("user"));
+    // Dynamically update user auth state whenever route changes
+    const [user, setUser] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem("user"));
+        } catch {
+            return null;
+        }
+    });
 
-    const handleLogout = () => {
+    useEffect(() => {
+        try {
+            setUser(JSON.parse(localStorage.getItem("user")));
+        } catch {
+            setUser(null);
+        }
+    }, [location]);
+
+    const handleLogout = (e) => {
+        e.preventDefault();
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-
-        navigate("/");
+        setUser(null);
+        navigate("/login");
     };
 
     return (
@@ -32,40 +47,35 @@ export default function Navbar() {
             </div>
 
             <div className="links">
-
                 <Link to="/" className="link">
                     Home
                 </Link>
 
                 {user ? (
                     <>
+                        <Link to="/resources" className="link">
+                            Browse
+                        </Link>
                         <Link to="/upload" className="link">
                             Upload
                         </Link>
-                        <Link to="/resources" className="link">
-                            Resources
-                        </Link>
-
                         <Link to="/dashboard" className="link">
-                            Profile
+                            Dashboard
                         </Link>
-                        <Link to='/logout' className="link" onClick={handleLogout}>
+                        <a href="#logout" className="link" onClick={handleLogout}>
                             Logout
-                        </Link>
-                        
+                        </a>
                     </>
                 ) : (
                     <>
                         <Link to="/login" className="link">
                             Login
                         </Link>
-
                         <Link to="/register" className="link">
                             Register
                         </Link>
                     </>
                 )}
-
             </div>
         </nav>
     );
